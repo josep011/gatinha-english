@@ -1,0 +1,41 @@
+{
+  "name": "Gatinha English",
+  "short_name": "Gatinha English",
+  "description": "Aprenda inglês jogando com a Gatinha: jogos, conversas, provas e um bichinho virtual.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F8",
+  "theme_color": "#EBB4C6",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Casinha da Gatinha",
+      "short_name": "Gatinha",
+      "description": "Cuidar da gatinha e ganhar dicas de inglês",
+      "url": "./?go=pet",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
