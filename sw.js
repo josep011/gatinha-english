@@ -1,5 +1,5 @@
 // Guarda o app no celular para funcionar sem internet + lembrete diário da gatinha
-const CACHE = 'gatinha-v55';
+const CACHE = 'gatinha-v56';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png'];
 const STATE = 'gatinha-state', STATE_URL = './__estado__';
 self.addEventListener('install', e => {
@@ -9,8 +9,7 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== STATE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
-  const u = e.request.url;
-  if (e.request.method !== 'GET' || u.includes('__estado__') || u.includes('huggingface.co') || u.includes('hf.co') || /\.onnx(\?|$)/.test(u)) return;  // vozes ficam guardadas pelo próprio pacote de voz
+  if (e.request.method !== 'GET' || e.request.url.includes('__estado__')) return;
   e.respondWith(
     caches.match(e.request).then(hit => {
       const net = fetch(e.request).then(res => {
