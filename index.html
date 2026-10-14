@@ -997,6 +997,11 @@ h1,h2,h3{text-wrap:balance}
 .vsel{flex:1;min-width:0;font-size:13px;font-weight:700;padding:10px 8px;appearance:auto;-webkit-appearance:menulist}
 .vbtn{width:auto;max-width:none;flex:none;padding:0 16px;font-size:13px}
 .cfgbox .vtip{font-size:12px}
+.natbox{display:flex;flex-direction:column;gap:8px;border-top:2px dashed var(--line);padding-top:10px;margin-top:2px}
+.natrow{display:flex;align-items:center;gap:8px;min-height:40px}
+.natname{flex:1;min-width:0;font-weight:800;font-size:13px;color:var(--ink)}
+.natok{font-weight:800;font-size:12px;color:var(--good-d,#3E8E5E)}
+.natrow .vbtn{height:38px}
 /* ---------- surpresinhas do menu ---------- */
 #funfx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
 .fx{position:absolute;left:0;top:0;pointer-events:none;will-change:transform}
@@ -1282,8 +1287,6 @@ h1,h2,h3{text-wrap:balance}
       <button class="trb" id="trAgain"><span class="ic"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 9h4l5-4v14l-5-4h-4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><b>Repetir</b><small>ouvir de novo</small></button>
       <button class="trb" id="trVoz"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h16M4 17h7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="17" cy="7" r="2.6" fill="currentColor"/><circle cx="14" cy="17" r="2.6" fill="currentColor"/></svg></span><b>Voz</b><small>escolher a voz</small></button>
     </div>
-    <p class="sec trsec">Últimas frases</p>
-    <div class="trhist" id="trHist"><p class="trempty">As frases traduzidas aparecem aqui. Toque numa para ouvir de novo.</p></div>
   </div>
 </section>
 
@@ -1617,8 +1620,8 @@ const HEART='<svg viewBox="0 0 24 24"><path fill="var(--heart)" d="M12 21s-8.5-5
 /* ---------- áudio ---------- */
 let voice = null;
 let ptVoice = null;
-const VOZ = { en: (()=>{ try{ return localStorage.getItem('gatinha-voz-en')||''; }catch(e){ return ''; } })(),
-              pt: (()=>{ try{ return localStorage.getItem('gatinha-voz-pt')||''; }catch(e){ return ''; } })(),
+const VOZ = { en: (()=>{ try{ const v=localStorage.getItem('gatinha-voz-en'); return v===null?'nat':v; }catch(e){ return 'nat'; } })(),
+              pt: (()=>{ try{ const v=localStorage.getItem('gatinha-voz-pt'); return v===null?'nat':v; }catch(e){ return 'nat'; } })(),
               slow: (()=>{ try{ return localStorage.getItem('gatinha-voz-vel')==='1'; }catch(e){ return false; } })() };
 // nota da voz: as "naturais"/online costumam soar bem melhor
 function voiceScore(v, reg){
@@ -1634,7 +1637,7 @@ const voicesFor = lang => { try{ return speechSynthesis.getVoices().filter(v=> l
 function bestVoice(lang){
   const vs=voicesFor(lang); if(!vs.length) return null;
   const want = lang==='en' ? VOZ.en : VOZ.pt;
-  if(want){ const v=vs.find(x=>x.voiceURI===want); if(v) return v; }
+  if(want && want!=='nat'){ const v=vs.find(x=>x.voiceURI===want); if(v) return v; }
   const reg = lang==='en' ? /en[-_]US/i : /pt[-_]BR/i;
   return vs.slice().sort((a,b)=>voiceScore(b,reg)-voiceScore(a,reg))[0];
 }
@@ -1643,7 +1646,59 @@ function pickVoice(){
 }
 try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
 const hasTTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+/* ---------- voz natural baixada (Piper, roda no próprio celular) ---------- */
+const NAT = { on: true, dl:{en:false,pt:false}, ids:{en:'en_US-hfc_female-medium', pt:'pt_BR-faber-medium'}, ready:{en:false, pt:false}, lib:null, libP:null, audio:null, err:'' };
+function lsGet0(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
+const NAT_VERS=['1.0.4','1.0.3','1.0.2','1.0.1','1.0.0'];
+function natLib(){
+  if(NAT.lib) return Promise.resolve(NAT.lib);
+  if(NAT.libP) return NAT.libP;
+  NAT.libP=(async()=>{
+    for(const v of NAT_VERS){ try{ const m=await import(`https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@${v}/+esm`); if(m && m.predict){ NAT.lib=m; return m; } }catch(e){} }
+    NAT.libP=null; throw new Error('lib');
+  })();
+  return NAT.libP;
+}
+async function natCheck(){
+  try{ const lib=await natLib(); const st=await lib.stored(); NAT.ready.en=st.includes(NAT.ids.en); NAT.ready.pt=st.includes(NAT.ids.pt); }catch(e){}
+}
+async function natDownload(lang, onProg){
+  if(NAT.ready[lang] || NAT.dl[lang]) return; NAT.dl[lang]=true;
+  try{
+  const lib=await natLib();
+  await lib.download(NAT.ids[lang], p=>{ if(onProg && p && p.total) onProg(Math.min(1,p.loaded/p.total)); });
+  NAT.ready[lang]=true;
+  } finally { NAT.dl[lang]=false; if(typeof voiceCfgRefresh==='function') voiceCfgRefresh(); }
+}
+// baixa as vozes naturais sozinho, em segundo plano (evita dados móveis quando o celular informa)
+async function natAuto(){
+  try{
+    if(navigator.onLine===false) return;
+    const c=navigator.connection; if(c && (c.saveData || c.type==='cellular')) { await natCheck(); return; }
+    await natCheck();
+    for(const l of ['en','pt']) if(!NAT.ready[l]) await natDownload(l);
+  }catch(e){}
+}
+function natStop(){ if(NAT.audio){ try{ NAT.audio.pause(); }catch(e){} NAT.audio=null; } }
+// tenta falar com a voz natural; devolve false se não der (aí usa a voz do celular)
+const natWanted = lang => ((lang==='en' ? (typeof VOZ!=='undefined'?VOZ.en:'nat') : (typeof VOZ!=='undefined'?VOZ.pt:'nat')) || 'nat')==='nat' && NAT.ready[lang];
+function natSpeak(text, lang, opts={}){
+  if(!natWanted(lang) || !NAT.lib || !text || !text.trim()) return false;
+  natStop(); try{ if(speechSynthesis.speaking) speechSynthesis.cancel(); }catch(e){}
+  const my={}; NAT.audio=my;
+  NAT.lib.predict({text:text.trim(), voiceId:NAT.ids[lang]}).then(wav=>{
+    if(NAT.audio!==my) return;
+    const a=new Audio(URL.createObjectURL(wav)); NAT.audio=a;
+    a.volume = opts.vol==null?1:opts.vol; a.playbackRate = (typeof VOZ!=='undefined' && VOZ.slow) ? .85 : 1;
+    a.onplay=()=>opts.onstart&&opts.onstart();
+    a.onended=a.onerror=()=>{ try{ URL.revokeObjectURL(a.src); }catch(e){} if(NAT.audio===a) NAT.audio=null; opts.onend&&opts.onend(); };
+    a.play().catch(()=>{ opts.onend&&opts.onend(); });
+  }).catch(()=>{ if(NAT.audio===my) NAT.audio=null; opts.fallback ? opts.fallback() : (opts.onend&&opts.onend()); });
+  return true;
+}
 function speak(t, vol=1, rate=.95){
+  if(vol>0 && t && t.trim() && natSpeak(t,'en',{vol})) return;
+  natStop();
   if(!hasTTS) return;
   try{
     if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
@@ -2701,7 +2756,7 @@ async function trTranslate(text){
   }
   out=out.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&');
   TR.last={src:text, out, lang: TR.from==='pt'?'en':'pt'};
-  if(!TR.hist.length || TR.hist[0].src!==text || TR.hist[0].out!==out){ TR.hist.unshift(TR.last); TR.hist=TR.hist.slice(0,8); } trHist();
+
   const b=$('#trBub'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   $('#trCat').textContent=out; $('#trCat').hidden=false; $('#trCatL').hidden=false; trUI();
   trSay(TR.last, ()=>{ TR.busy=false; if(TR.on && TR.running) TR.restartT=setTimeout(trListen, 300); else trStatus('Toque no microfone para falar de novo'); });
@@ -2709,6 +2764,16 @@ async function trTranslate(text){
 function trSay(item, done){
   const k=$('#trKit .kitty');
   const fin=()=>{ clearInterval(TR.talkT); if(k) k.classList.remove('smile'); done&&done(); };
+  const talk=()=>{ clearInterval(TR.talkT); TR.talkT=setInterval(()=>{ if(k) k.classList.toggle('smile'); }, 160); };
+  if(natWanted(item.lang)){
+    trStatus(item.lang==='en' ? 'Falando em inglês…' : 'Falando em português…');
+    let ended=false; const end=()=>{ if(ended) return; ended=true; fin(); };
+    const fb=()=>{ NAT.ready[item.lang]=false; trSayTTS(item, k, fin); };
+    if(natSpeak(item.out, item.lang, {onstart:talk, onend:end, fallback:fb})){ setTimeout(end, 8000+item.out.length*140); return; }
+  }
+  trSayTTS(item, k, fin);
+}
+function trSayTTS(item, k, fin){
   if(!hasTTS){ fin(); return; }
   trStatus(item.lang==='en' ? 'Falando em inglês…' : 'Falando em português…');
   try{
@@ -2723,13 +2788,7 @@ function trSay(item, done){
     speechSynthesis.speak(u);
   }catch(e){ fin(); }
 }
-function trHist(){
-  const h=$('#trHist'); if(!h) return;
-  if(!TR.hist.length){ h.innerHTML='<p class="trempty">As frases traduzidas aparecem aqui. Toque numa para ouvir de novo.</p>'; return; }
-  h.innerHTML=TR.hist.map((x,i)=>`<button class="trrow" data-i="${i}"><span>${esc(x.src)}</span><b>${esc(x.out)}</b></button>`).join('');
-  h.querySelectorAll('.trrow').forEach(b=>b.onclick=()=>{ const it=TR.hist[+b.dataset.i]; if(!it||TR.busy) return; TR.busy=true; if(TR.rec){ try{ TR.rec.onend=null; TR.rec.onresult=null; TR.rec.abort(); }catch(e){} TR.rec=null; $('#trStage').classList.remove('listen'); }
-    trSay(it, ()=>{ TR.busy=false; if(TR.on && TR.running) TR.restartT=setTimeout(trListen, 300); else trStatus('Toque no microfone para falar'); }); });
-}
+function trHist(){}
 $('#trMic').onclick=()=>{
   unlockAudio();
   TR.on=!TR.on; trUI(); sfx('tap');
@@ -2764,14 +2823,16 @@ function voiceLabel(v, i, lang){
 function fillVoiceSelect(sel, lang){
   if(!sel) return;
   const vs=voicesFor(lang), cur = lang==='en' ? VOZ.en : VOZ.pt;
-  if(!vs.length){ sel.innerHTML=`<option value="">Nenhuma voz ${lang==='en'?'em inglês':'em português'} encontrada</option>`; sel.disabled=true; return; }
   sel.disabled=false;
   const best=bestVoice(lang);
-  sel.innerHTML=`<option value="">Automática (melhor voz)</option>`+vs.map((v,i)=>`<option value="${esc(v.voiceURI)}"${v.voiceURI===cur?' selected':''}>${esc(voiceLabel(v,i,lang))}</option>`).join('');
-  if(!cur) sel.value='';
+  sel.innerHTML=`<option value="nat">Voz natural</option><option value="">Voz do celular (automática)</option>`+vs.map((v,i)=>`<option value="${esc(v.voiceURI)}">${esc(voiceLabel(v,i,lang))}</option>`).join('');
+  sel.value = cur==null ? 'nat' : cur; if(sel.value!==cur) sel.value='nat';
 }
 function voiceCfgRefresh(){ if(!$('#vozBox') || $('#rOver').hidden) return; fillVoiceSelect($('#vozEn'),'en'); fillVoiceSelect($('#vozPt'),'pt'); }
 function testVoice(lang){
+  const txt = lang==='en' ? `Hi, ${NAME}! I'm your little cat. Let's learn English together!` : `Oi, ${NAME}! Eu sou a sua gatinha. Vamos aprender inglês juntas?`;
+  if(natSpeak(txt, lang, {})) return;
+  natStop();
   if(!hasTTS) return;
   try{
     speechSynthesis.cancel(); speechSynthesis.resume();
@@ -2784,15 +2845,15 @@ function testVoice(lang){
 function openVoicePanel(){
   const wasOn=TR.on; if(TR.on){ TR.on=false; clearTimeout(TR.restartT); if(TR.rec){ try{ TR.rec.onend=null; TR.rec.onresult=null; TR.rec.abort(); }catch(e){} TR.rec=null; } $('#trStage').classList.remove('listen'); trUI(); }
   const opt=(v,l,on)=>`<button class="opt" role="radio" data-vel="${v}" aria-checked="${on}">${l}</button>`;
-  overlay(`<div class="vpanel" id="vozBox"><h2>Voz da gatinha</h2><p>A voz vem do próprio celular. Escolha a que soar mais bonita e toque em “Ouvir”.</p>
+  const opt2=(v,l,on)=>`<button class="opt" role="radio" data-nat="${v}" aria-checked="${on}">${l}</button>`;
+  overlay(`<div class="vpanel" id="vozBox"><h2>Voz da gatinha</h2>
     <label class="vlbl" for="vozEn">Quando ela fala inglês</label><div class="vrow"><select class="txtin vsel" id="vozEn"></select><button class="btn plain vbtn" id="vozEnT">Ouvir</button></div>
     <label class="vlbl" for="vozPt">Quando ela fala português</label><div class="vrow"><select class="txtin vsel" id="vozPt"></select><button class="btn plain vbtn" id="vozPtT">Ouvir</button></div>
     <span class="vlbl">Velocidade</span><div class="opts" role="radiogroup">${opt('0','Normal',!VOZ.slow)}${opt('1','Mais devagar',VOZ.slow)}</div>
-    <p class="vtip">Dica: vozes melhores podem ser baixadas no celular em Configurações → Google → Saída de texto para voz.</p>
     <div class="btns"><button class="btn" id="vozOk">Pronto</button></div></div>`);
-  voiceCfgRefresh();
-  $('#vozEn').onchange=e=>{ VOZ.en=e.target.value; lsSet('gatinha-voz-en', VOZ.en); voice=bestVoice('en'); testVoice('en'); };
-  $('#vozPt').onchange=e=>{ VOZ.pt=e.target.value; lsSet('gatinha-voz-pt', VOZ.pt); ptVoice=bestVoice('pt'); testVoice('pt'); };
+  voiceCfgRefresh(); natCheck().then(voiceCfgRefresh);
+  $('#vozEn').onchange=e=>{ VOZ.en=e.target.value; lsSet('gatinha-voz-en', VOZ.en); voice=bestVoice('en'); if(VOZ.en==='nat' && !NAT.ready.en) natDownload('en').catch(()=>{}); testVoice('en'); };
+  $('#vozPt').onchange=e=>{ VOZ.pt=e.target.value; lsSet('gatinha-voz-pt', VOZ.pt); ptVoice=bestVoice('pt'); if(VOZ.pt==='nat' && !NAT.ready.pt) natDownload('pt').catch(()=>{}); testVoice('pt'); };
   $('#vozEnT').onclick=()=>{ unlockAudio(); testVoice('en'); };
   $('#vozPtT').onclick=()=>{ unlockAudio(); testVoice('pt'); };
   $('#vozBox').querySelectorAll('[data-vel]').forEach(b=>b.onclick=()=>{ VOZ.slow=b.dataset.vel==='1'; lsSet('gatinha-voz-vel', VOZ.slow?'1':'0'); $('#vozBox').querySelectorAll('[data-vel]').forEach(x=>x.setAttribute('aria-checked', x===b)); testVoice(TR.from==='pt'?'en':'pt'); });
@@ -5714,6 +5775,7 @@ setTimeout(audioCheck, 1500);
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 setTimeout(birthdayParty, 3600);
 setTimeout(christmasGift, 3700);
+setTimeout(natAuto, 5000);
 setTimeout(bkNag, 4200);
 funNext(9000);
 </script>
