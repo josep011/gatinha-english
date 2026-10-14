@@ -945,6 +945,97 @@ h1,h2,h3{text-wrap:balance}
 .tools .game.excardhome{--gcd:#C9A24E}
 .chip{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 11px;font-weight:800;font-size:13px;color:var(--ink);font-family:inherit}
 .chip[aria-selected="true"]{border-color:var(--title);background:var(--brand-soft);color:var(--title)}
+/* ---------- surpresinhas do menu ---------- */
+#funfx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.fx{position:absolute;left:0;top:0;pointer-events:none;will-change:transform}
+.fx.tap{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fxmouse{width:72px;padding:8px;margin:-8px}
+.fxmouse svg{width:100%;height:auto;display:block}
+.fxyarn{width:40px;height:40px}
+.fxyarn svg,.fxbat svg{width:100%;height:100%;display:block}
+.fxbfly{width:52px;height:42px}
+.fxbfly svg{width:100%;height:100%;display:block;overflow:visible}
+.fxbfly .wl,.fxbat .wl{transform-box:view-box;transform-origin:50% 50%;animation:fxflap .16s ease-in-out infinite alternate}
+.fxbfly .wr,.fxbat .wr{transform-box:view-box;transform-origin:50% 50%;animation:fxflap .16s ease-in-out infinite alternate}
+.fxbfly.rest .wl,.fxbfly.rest .wr{animation-duration:.9s}
+@keyframes fxflap{to{transform:scaleX(.35)}}
+.fxbat{width:54px;height:26px}
+.fxpaw{width:24px;height:24px;margin:-12px 0 0 -12px;fill:var(--brand-d);opacity:0;animation:fxpaw 2.2s ease forwards}
+.fxpaw svg{width:100%;height:100%;display:block}
+@keyframes fxpaw{12%{opacity:.8}60%{opacity:.65}100%{opacity:0}}
+.fxpeek{width:74px;height:66px;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.fxpeek img{position:absolute;left:0;top:0;width:100%;height:auto;pointer-events:none}
+.fxpeek .pb{opacity:0}
+.fxpeek.blink .pb{opacity:1}
+.fxpeek.l{left:0;transform:translateX(-80px) rotate(28deg)}
+.fxpeek.l.in{transform:translateX(-26px) rotate(28deg)}
+.fxpeek.r{left:auto;right:0;transform:translateX(80px) rotate(-28deg)}
+.fxpeek.r.in{transform:translateX(26px) rotate(-28deg)}
+.fxtxt{font-family:var(--display);font-weight:700;font-size:18px;color:var(--title);white-space:nowrap;text-shadow:0 2px 0 var(--surface),0 0 6px var(--surface);animation:fxup 1.6s ease-out forwards}
+.fxtxt.soft{font-size:15px;color:var(--muted)}
+.fxtxt.pop{font-size:20px;color:var(--brand-d)}
+.fxtxt.coin{display:flex;align-items:center;gap:4px;color:var(--sun-d)}
+.fxtxt.coin svg,.fxtxt.coin img{width:20px;height:20px}
+@keyframes fxup{0%{opacity:0;transform:translateY(6px) scale(.7)}15%{opacity:1;transform:scale(1.08)}25%{transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+.hello{position:relative}
+.punb{position:absolute;left:104px;top:-8px;z-index:4;max-width:calc(100% - 150px);min-width:150px;text-align:left;background:var(--surface);color:var(--title);border:2px solid var(--brand);border-radius:16px;padding:8px 12px;box-shadow:0 3px 0 var(--brand);display:flex;flex-direction:column;gap:3px;font-family:inherit;animation:punin .35s cubic-bezier(.3,1.5,.5,1)}
+.punb::after{content:"";position:absolute;left:-9px;top:26px;border:8px solid transparent;border-right-color:var(--brand);border-left:0}
+.punb .pen{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.2}
+.punb .phint{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.punb .ppt{font-weight:800;font-size:13px;color:var(--ink)}
+.punb .pwhy{font-weight:700;font-size:12px;color:var(--muted);line-height:1.3}
+.punb .pwhy b{color:var(--title)}
+.punb.out{animation:punout .35s ease forwards}
+@keyframes punin{from{opacity:0;transform:scale(.6) translateX(-14px)}}
+@keyframes punout{to{opacity:0;transform:scale(.8) translateY(-8px)}}
+/* chapéus de datas especiais (presos na cabeça) */
+.k-headi .k-hat{position:absolute;pointer-events:none;width:160px;left:22px;top:-104px;transform:rotate(-6deg)}
+.k-headi .k-hat.santa{width:170px;left:16px;top:-88px;transform:rotate(-4deg)}
+.k-headi .k-hat.party{width:140px;left:34px;top:-108px;transform:rotate(6deg)}
+/* manias da gatinha */
+.kitty.yawn .k-blink{opacity:1;transition:opacity .2s}
+.kitty.yawn .k-headi{animation:k-yawn 2.6s ease-in-out}
+.kitty.yawn .k-torso{animation:k-stretch 2.6s ease-in-out}
+.kitty.yawn .k-arm-r{animation:k-stretcha 2.6s ease-in-out}
+@keyframes k-yawn{25%,70%{transform:translateY(-8px) rotate(-9deg) scaleY(1.04)}}
+@keyframes k-stretch{25%,70%{transform:scaleY(1.05)}}
+@keyframes k-stretcha{25%,70%{transform:rotate(-60deg)}}
+.kitty.sneeze .k-headi{animation:k-sneeze 1.4s ease-in-out}
+.kitty.sneeze .k-blink{animation:k-eyesnz 1.4s step-end}
+@keyframes k-sneeze{30%{transform:translateY(-6px) rotate(-10deg)}38%{transform:translateY(-8px) rotate(-12deg)}44%{transform:translateY(6px) rotate(12deg)}60%{transform:translateY(2px) rotate(4deg)}}
+@keyframes k-eyesnz{0%{opacity:0}28%{opacity:1}62%{opacity:0}}
+.kitty.lick .k-arm-r{z-index:5;animation:k-lickarm 2.6s ease-in-out}
+.kitty.lick .k-headi{animation:k-lickhead 2.6s ease-in-out}
+.kitty.lick .k-blink{animation:k-eyelick 2.6s step-end}
+@keyframes k-lickarm{20%,80%{transform:rotate(138deg)}}
+@keyframes k-lickhead{20%{transform:rotate(9deg) translateY(4px)}35%{transform:rotate(14deg) translateY(7px)}50%{transform:rotate(8deg) translateY(4px)}65%{transform:rotate(14deg) translateY(7px)}80%{transform:rotate(9deg) translateY(4px)}}
+@keyframes k-eyelick{0%{opacity:0}20%{opacity:1}80%{opacity:0}}
+.kitty.nap .k-blink{animation:k-eyenap 4.4s step-end}
+.kitty.nap .k-headi{animation:k-nap 4.4s ease-in-out}
+.kitty.nap{animation:k-napjump 4.4s ease-in-out}
+@keyframes k-eyenap{0%{opacity:1}78%{opacity:0}}
+@keyframes k-nap{30%,74%{transform:rotate(12deg) translateY(10px)}79%{transform:rotate(-4deg) translateY(-4px)}86%{transform:none}}
+@keyframes k-napjump{76%{transform:none}80%{transform:translateY(-16px)}86%{transform:none}}
+/* soninho da noite */
+.kitty.sleepy .k-blink{opacity:1}
+.kitty.sleepy .k-headi{animation:k-sleepyh 4s ease-in-out infinite}
+.kitty.sleepy .k-torso{animation:k-breath 4s ease-in-out infinite}
+@keyframes k-sleepyh{0%,100%{transform:rotate(10deg) translateY(9px)}50%{transform:rotate(12deg) translateY(12px)}}
+.zzz{position:absolute;left:62%;top:2px;pointer-events:none;font-family:var(--display);font-weight:700;color:var(--muted)}
+.zzz i{position:absolute;font-style:normal;opacity:0;animation:zz 3.6s ease-out infinite}
+.zzz i:nth-child(1){font-size:13px;animation-delay:0s}
+.zzz i:nth-child(2){font-size:16px;animation-delay:1.2s}
+.zzz i:nth-child(3){font-size:20px;animation-delay:2.4s}
+@keyframes zz{0%{opacity:0;transform:translate(0,10px)}20%{opacity:.9}100%{opacity:0;transform:translate(26px,-34px)}}
+/* cambalhota do segredinho */
+.kitty.flip{animation:k-flip 1.1s cubic-bezier(.4,0,.3,1)}
+@keyframes k-flip{0%{transform:none}25%{transform:translateY(-34px) rotate(0)}70%{transform:translateY(-34px) rotate(360deg)}100%{transform:translateY(0) rotate(360deg)}}
+/* fundos das datas */
+.bgfx.neve i{background:#fff;border-radius:50%;opacity:.95;box-shadow:0 0 3px rgba(120,110,140,.35)}
+.bgfx.confete i{border-radius:2px;opacity:.75;background:#F59AB8}
+.bgfx.confete i:nth-child(4n+1){background:#FFD56A}
+.bgfx.confete i:nth-child(4n+2){background:#8FD3F4}
+.bgfx.confete i:nth-child(4n+3){background:#B9E4A8}
 </style>
 </head>
 <body>
@@ -1288,19 +1379,20 @@ function homeKitty(){
     slot.innerHTML=kittyHTML('idle walk k-fadein',.3);
     setTimeout(()=>{ const k=$('#hkit .kitty'); if(!k) return; k.classList.remove('walk','k-fadein'); k.classList.add('wave'); setTimeout(()=>k.classList.remove('wave'),1800); },1800);
   } else { kEntered=true; slot.innerHTML=kittyHTML('idle',.3); }
+  if(typeof decorateKitty==='function') decorateKitty();
 }
 
 // animações de espera no menu: ela anda, faz continência, treina com a espada, olha em volta, pula
-const IDLES=[['walk',4500],['salute',2600],['swing',1900],['look',2800],['hop',950]];
+const IDLES=[['walk',4500],['salute',2600],['swing',1900],['look',2800],['hop',950],['yawn',2600],['sneeze',1400],['lick',2600],['nap',4400]];
 let idleLast='', idleTimer=null;
 function idleLoop(){
   clearTimeout(idleTimer);
   idleTimer=setTimeout(()=>{
     const k=$('#hkit .kitty');
-    if(!$('#home').hidden && k && !reduceMotion() && !k.classList.contains('wave') && !k.classList.contains('walk') && !k.classList.contains('poke')){
+    if(!$('#home').hidden && k && !reduceMotion() && !k.classList.contains('sleepy') && !k.classList.contains('flip') && !k.classList.contains('wave') && !k.classList.contains('walk') && !k.classList.contains('poke')){
       k.classList.remove('k-fadein');
       const opts=IDLES.filter(i=>i[0]!==idleLast); const [name,dur]=pick(opts); idleLast=name;
-      k.classList.add(name); setTimeout(()=>k.classList.remove(name), dur+50);
+      k.classList.add(name); setTimeout(()=>k.classList.remove(name), dur+50); if(typeof maniaFx==='function') maniaFx(name);
     }
     idleLoop();
   }, 4500+Math.random()*3000);
@@ -1361,7 +1453,7 @@ function chatLines(){
   if(best) L.push(`Seu recorde é ${best} pontos. Vamos bater?`);
   return L;
 }
-const BUSY=['walk','salute','swing','look','hop','wave','poke'];
+const BUSY=['walk','salute','swing','look','hop','wave','poke','yawn','sneeze','lick','nap','flip','sleepy'];
 let lastSaid='', pokeCount=0, pokeReset=null, tipTurn=false;
 function pokeKitty(){
   const k=$('#hkit .kitty'); if(!k) return;
@@ -1372,7 +1464,10 @@ function pokeKitty(){
   }
   pokeCount++; clearTimeout(pokeReset); pokeReset=setTimeout(()=>pokeCount=0, 3000);
   let html, say=null;
-  if(pokeCount>=6){ html='Ei, assim eu fico tonta! 😵‍💫'.replace(' 😵‍💫',''); pokeCount=0; }
+  const woke = typeof wakeKitty==='function' && wakeKitty();
+  if(woke){ html='Hã? Eu só tava descansando os olhinhos…'; pokeCount=0; }
+  else if(pokeCount>=10){ html='Hey! That tickles!<small style="text-transform:none;letter-spacing:0;margin:2px 0 0">Ei! Faz cócegas!</small>'; say='Hey! That tickles!'; pokeCount=0; flipKitty(); }
+  else if(pokeCount===6){ html='Ei, assim eu fico tonta!'; }
   else {
     tipTurn = !tipTurn || Math.random()<.2;
     if(tipTurn){ let t,n=0; do{ t=pick(TIPS); n++ } while(t[0]===lastSaid && n<10); lastSaid=t[0]; html=`<small>Dica de inglês</small>${t[0]}`; say=t[1]; }
@@ -2269,9 +2364,10 @@ function applyPal(){
 function drawBg(){
   let b=$('#bgfx');
   if(!b){ b=document.createElement('div'); b.id='bgfx'; b.setAttribute('aria-hidden','true'); $('#home').prepend(b); }
-  b.className='bgfx '+BGFX; b.innerHTML='';
+  const MODEBG=(BGFX!=='off' && typeof seasonBg==='function' && seasonBg()) || BGFX;
+  b.className='bgfx '+MODEBG; b.innerHTML='';
   if(BGFX==='off' || reduceMotion()) return;
-  const n=BGFX==='estrelas'?16:14;
+  const n=MODEBG==='estrelas'?16:MODEBG==='neve'?22:MODEBG==='confete'?20:14;
   for(let i=0;i<n;i++){
     const s=(BGFX==='estrelas'?9:10)+Math.random()*8, dur=14+Math.random()*12;
     b.insertAdjacentHTML('beforeend', `<i style="left:${(i+.2+Math.random()*.6)/n*100}%;width:${s}px;height:${s}px;animation-duration:${dur}s;animation-delay:${-Math.random()*dur}s"></i>`);
@@ -5056,6 +5152,224 @@ $('#pQuit').onclick=()=>{ P.running ? pausePairs() : renderHome() };
 
 $('#rQuit').onclick=()=>{ R.running ? pause() : renderHome() };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden){ pause(); pausePairs(); vPause(); pauseVF(); pauseHunt(); } });
+/* ================= surpresinhas do menu ================= */
+const FUN = {timer:null, last:'', busy:false, force:null, wakeUntil:0, mornDone:false};
+const PUNS = [
+  ["I'm feline good!", 'Estou me sentindo bem!', '<b>feline</b> (felino) soa como <b>feeling</b> (sentindo).'],
+  ["You've got to be kitten me!", 'Você só pode estar brincando!', '<b>kitten</b> (gatinho) soa como <b>kidding</b> (brincando).'],
+  ["That's purr-fect!", 'Perfeito!', '<b>purr</b> é o ronronar do gato, junto com <b>perfect</b>.'],
+  ['Meow you doing?', 'Como você está?', '<b>meow</b> (miau) no lugar de <b>how</b>: “How you doing?”.'],
+  ["I'm not kitten around!", 'Não estou brincando!', '<b>kitten around</b> soa como <b>kidding around</b> (brincar, zoar).'],
+  ['Have a mice day!', 'Tenha um ótimo dia!', '<b>mice</b> (ratinhos) soa como <b>nice</b> (bom, legal).'],
+  ['Paws for a second!', 'Pare um segundinho!', '<b>paws</b> (patas) soa igual a <b>pause</b> (pausa).'],
+  ["What's the meow-ter?", 'Qual é o problema?', '<b>meow-ter</b> imita <b>matter</b>: “What’s the matter?”.'],
+  ['Claw-some job!', 'Trabalho incrível!', '<b>claw</b> (garra) + <b>awesome</b> (incrível).'],
+  ['Cat-ch you later!', 'Até mais!', '<b>catch you later</b> é “te vejo depois”, com <b>cat</b> no começo.'],
+  ['Fur real?', 'Sério mesmo?', '<b>fur</b> (pelo) soa como <b>for</b>: “For real?” = “Sério?”.'],
+  ["I've got cattitude!", 'Eu tenho atitude!', '<b>cat</b> + <b>attitude</b> (atitude).'],
+  ["You're purr-fectly amazing!", 'Você é perfeitamente incrível!', '<b>purr</b> (ronronar) dentro de <b>perfectly</b>.'],
+  ['I need a cat-nap.', 'Preciso de um cochilo.', '<b>catnap</b> é uma palavra de verdade: um cochilo curtinho!'],
+];
+const BFLY_SVG = '<svg viewBox="0 0 40 32" aria-hidden="true"><g class="wl"><path d="M19 15 C8 0 0 4 3 13 C5 19 13 18 19 16Z" fill="#F7A8C4"/><path d="M19 17 C10 19 6 27 11 29 C15 30 18 24 19 18Z" fill="#C9B6F2"/><circle cx="9" cy="10" r="2.2" fill="#fff" opacity=".7"/></g><g class="wr"><path d="M21 15 C32 0 40 4 37 13 C35 19 27 18 21 16Z" fill="#F7A8C4"/><path d="M21 17 C30 19 34 27 29 29 C25 30 22 24 21 18Z" fill="#C9B6F2"/><circle cx="31" cy="10" r="2.2" fill="#fff" opacity=".7"/></g><ellipse cx="20" cy="17" rx="1.6" ry="8" fill="#6B5A7B"/><path d="M19 9 Q16 3 14 2 M21 9 Q24 3 26 2" stroke="#6B5A7B" stroke-width="1" fill="none" stroke-linecap="round"/></svg>';
+const YARN_SVG = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#F4A9C0"/><path d="M6 14 Q20 22 34 12 M4 22 Q20 30 36 20 M9 30 Q20 34 31 29 M12 6 Q22 18 18 37 M24 4 Q30 20 26 37" stroke="#E07FA0" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="17" fill="none" stroke="#D86E93" stroke-width="1.5"/></svg>';
+const PAW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="15.5" rx="5.2" ry="4.4"/><ellipse cx="5.5" cy="9.5" rx="2.2" ry="2.8"/><ellipse cx="9.6" cy="5.6" rx="2.2" ry="2.9"/><ellipse cx="14.4" cy="5.6" rx="2.2" ry="2.9"/><ellipse cx="18.5" cy="9.5" rx="2.2" ry="2.8"/></svg>';
+const BAT_SVG = '<svg viewBox="0 0 60 28" aria-hidden="true"><g class="wl"><path d="M28 12 C20 2 8 2 1 8 C6 9 8 12 7 15 C11 13 14 15 15 18 C18 15 22 15 25 17Z" fill="#5B4A78"/></g><g class="wr"><path d="M32 12 C40 2 52 2 59 8 C54 9 52 12 53 15 C49 13 46 15 45 18 C42 15 38 15 35 17Z" fill="#5B4A78"/></g><ellipse cx="30" cy="14" rx="5.5" ry="7" fill="#4A3B63"/><path d="M26 8 L27 3 L29 7 M34 8 L33 3 L31 7" fill="#4A3B63"/><circle cx="28" cy="12" r="1.2" fill="#FFD56A"/><circle cx="32" cy="12" r="1.2" fill="#FFD56A"/></svg>';
+const HATS = {
+  witch:'<svg class="k-hat witch" viewBox="0 0 100 90" aria-hidden="true"><path d="M27 74 L52 6 Q57 0 61 7 L76 74Z" fill="#5C4884"/><path d="M52 6 Q57 0 61 7 Q70 20 82 22 Q70 26 64 20Z" fill="#4B3A6B"/><path d="M30 64 L73 64 L75 74 L28 74Z" fill="#F2A65A"/><ellipse cx="50" cy="76" rx="49" ry="10" fill="#4B3A6B"/><path d="M50 40 l2.4 5 5.4.6-4 3.7 1.1 5.3-4.9-2.7-4.9 2.7 1.1-5.3-4-3.7 5.4-.6z" fill="#FFD56A"/></svg>',
+  santa:'<svg class="k-hat santa" viewBox="0 0 100 90" aria-hidden="true"><path d="M16 72 C22 34 50 8 80 18 C90 22 92 34 88 46 C80 34 70 34 66 44 L76 72Z" fill="#E05A6B"/><path d="M40 30 C50 20 62 16 74 18" stroke="#F08A97" stroke-width="5" fill="none" stroke-linecap="round" opacity=".6"/><circle cx="88" cy="48" r="9" fill="#FFFFFF"/><rect x="8" y="64" width="80" height="18" rx="9" fill="#FFFFFF"/><rect x="8" y="64" width="80" height="18" rx="9" fill="none" stroke="#E9E2EA" stroke-width="2"/></svg>',
+  party:'<svg class="k-hat party" viewBox="0 0 100 90" aria-hidden="true"><path d="M28 80 L52 8 L76 80Z" fill="#F59AB8"/><path d="M36 56 L68 56 M32 68 L72 68 M42 40 L62 40 M47 26 L57 26" stroke="#FFD56A" stroke-width="5" stroke-linecap="round"/><circle cx="52" cy="8" r="7.5" fill="#8FD3F4"/><ellipse cx="52" cy="80" rx="25" ry="5" fill="#E07FA0"/></svg>'
+};
+function season(){
+  if(FUN.force) return FUN.force;
+  const d=new Date(), m=d.getMonth()+1, day=d.getDate();
+  if(m===4 && day===24) return 'bday';
+  if(m===10 && day>=24) return 'halloween';
+  if(m===12 && day<=26) return 'xmas';
+  return '';
+}
+const seasonBg = () => ({xmas:'neve', bday:'confete'})[season()] || '';
+const isNight = () => { if(FUN.night!=null) return FUN.night; const h=new Date().getHours(); return h>=22 || h<6; };
+const homeOn = () => !$('#home').hidden && $('#rOver').hidden && !document.hidden;
+function funLayer(){
+  let l=$('#funfx');
+  if(!l){ l=document.createElement('div'); l.id='funfx'; l.setAttribute('aria-hidden','true'); $('#home').appendChild(l); }
+  return l;
+}
+function fxEl(cls, html){ const e=document.createElement('div'); e.className='fx '+cls; e.innerHTML=html; funLayer().appendChild(e); return e; }
+function fxFloat(x, y, html, cls=''){
+  const e=fxEl('fxtxt '+cls, html); e.style.left=x+'px'; e.style.top=y+'px';
+  setTimeout(()=>e.remove(), 1600); return e;
+}
+// move um elemento quadro a quadro: pos(t) devolve [x, y, giro, espelho]
+function fxRun(el, dur, pos, onFrame, onEnd){
+  const t0=performance.now();
+  const step=now=>{
+    if(!el.isConnected) return onEnd && onEnd();
+    let t=Math.min(1,(now-t0)/(el._dur||dur));
+    const [x,y,r=0,flip=1]=pos(t);
+    el.style.transform=`translate(${x}px,${y}px) rotate(${r}deg) scaleX(${flip})`;
+    onFrame && onFrame(x,y,t);
+    if(t<1) requestAnimationFrame(step); else { el.remove(); onEnd && onEnd(); }
+  };
+  requestAnimationFrame(step);
+}
+function kittyRect(){ const k=$('#hkit .kitty'); return k ? k.getBoundingClientRect() : null; }
+function lookAt(x){
+  const k=$('#hkit .kitty'); if(!k || k.classList.contains('sleepy')) return;
+  const r=k.getBoundingClientRect(), dx=x/zf()-(r.left+r.width/2)/zf();
+  k.style.setProperty('--hr', Math.max(-14,Math.min(14,dx/12))+'deg');
+  k.style.setProperty('--hx', Math.max(-8,Math.min(8,dx/28))+'px');
+  k.classList.add('smile');
+  clearTimeout(k._ft); k._ft=setTimeout(()=>{ k.style.setProperty('--hr','0deg'); k.style.setProperty('--hx','0px'); k.classList.remove('smile'); },900);
+}
+const VW = () => innerWidth/zf(), VH = () => innerHeight/zf();
+const FX = {
+  mouse(done){
+    const dir=Math.random()<.5?1:-1, W=VW(), y=VH()-58, el=fxEl('fxmouse tap pmouse', MOUSE_SVG);
+    sfx('squeak');
+    el.onclick=()=>{
+      if(el._caught) return; el._caught=true; sfx('squeak');
+      const r=el.getBoundingClientRect(), key='gatinha-funcoins', today=new Date().toDateString();
+      let g; try{ g=JSON.parse(lsGet(key,'{}')); }catch(e){ g={}; }
+      if(g.d!==today) g={d:today,n:0};
+      if(g.n<5){ g.n++; lsSet(key, JSON.stringify(g)); ST.coins+=1; ST.coinsTotal=(ST.coinsTotal||0)+1; saveST(); const t=$('#coinTop'); if(t) t.textContent=ST.coins; fxFloat(r.left/zf(), r.top/zf()-20, `+1 ${COIN}`, 'coin'); }
+      else fxFloat(r.left/zf(), r.top/zf()-20, 'Squeak!');
+      el._dur=(el._dur||4600)*.55;
+    };
+    fxRun(el, 4600, t=>{ const x = dir>0 ? -70+(W+80)*t : W+10-(W+80)*t; return [x, y+Math.abs(Math.sin(t*40))*-3, 0, dir]; },
+      x=>lookAt((x+32)*zf()), done);
+  },
+  yarn(done){
+    const dir=Math.random()<.5?1:-1, W=VW(), y=VH()-56, el=fxEl('fxyarn', YARN_SVG), kr=kittyRect();
+    let hopped=false;
+    fxRun(el, 5200, t=>{ const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; const x = dir>0 ? -50+(W+60)*e : W+10-(W+60)*e; return [x, y-Math.abs(Math.sin(e*14))*16*(1-e*.6), x*3*dir, 1]; },
+      x=>{ lookAt((x+20)*zf()); if(!hopped && kr && Math.abs((x+20)-(kr.left+kr.width/2)/zf())<30){ hopped=true; const k=$('#hkit .kitty'); if(k && !k.classList.contains('sleepy')){ k.classList.add('hop'); setTimeout(()=>k.classList.remove('hop'),1000); } } }, done);
+  },
+  butterfly(done){
+    const W=VW(), H=VH(), from=Math.random()<.5?-1:1;
+    const cards=[...document.querySelectorAll('#home .game')].map(c=>c.getBoundingClientRect()).filter(r=>r.top>70 && r.bottom<innerHeight-20);
+    const tg=cards.length ? pick(cards) : null;
+    const tx=tg ? (tg.right/zf()-42) : W/2, ty=tg ? (tg.top/zf()-16) : H/3;
+    const sx=from<0?-40:W+10, sy=H*(.25+Math.random()*.4), ex=from<0?W+20:-60, ey=-50;
+    const el=fxEl('fxbfly', BFLY_SVG);
+    // chega (40%), pousa (35%), vai embora (25%)
+    fxRun(el, 8000, t=>{
+      if(t<.4){ const u=t/.4, e=1-Math.pow(1-u,2); return [sx+(tx-sx)*e, sy+(ty-sy)*e+Math.sin(u*12)*14, Math.sin(u*10)*10, 1]; }
+      if(t<.75){ el.classList.add('rest'); return [tx, ty, 0, 1]; }
+      el.classList.remove('rest'); const u=(t-.75)/.25; return [tx+(ex-tx)*u*u, ty+(ey-ty)*u+Math.sin(u*10)*10, -12, 1];
+    }, null, done);
+  },
+  paws(done){
+    const W=VW(), H=VH(), ltr=Math.random()<.5, y0=H*(.3+Math.random()*.4), y1=y0+(Math.random()-.5)*H*.3, n=9;
+    const ang=Math.atan2(y1-y0, ltr?W:-W)*180/Math.PI+90;
+    for(let i=0;i<n;i++) setTimeout(()=>{
+      const u=(i+.5)/n, side=(i%2?1:-1)*9, x=(ltr?u:1-u)*W, y=y0+(y1-y0)*u;
+      const e=fxEl('fxpaw', PAW_SVG); e.style.left=(x+side*Math.cos(ang*Math.PI/180))+'px'; e.style.top=(y+side*Math.sin(ang*Math.PI/180))+'px'; e.style.transform=`rotate(${ang}deg)`;
+      setTimeout(()=>e.remove(), 2200);
+    }, i*260);
+    setTimeout(done, n*260+2200);
+  },
+  peek(done){
+    const side=Math.random()<.5?'l':'r', y=VH()*(.3+Math.random()*.35);
+    const el=fxEl('fxpeek tap '+side, `<img src="${KA.head}" alt=""><img class="pb" src="${KA.head_blink}" alt="">`);
+    el.style.top=y+'px';
+    let end=()=>{ if(!el.isConnected) return; el.classList.remove('in'); setTimeout(()=>{ el.remove(); done(); }, 500); };
+    el.onclick=()=>{ sfx('pop'); const r=el.getBoundingClientRect(); fxFloat(Math.min(VW()-120, Math.max(8, r.left/zf())), r.top/zf()-26, 'Peekaboo!'); clearTimeout(el._t); end(); };
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+    setTimeout(()=>{ el.classList.add('blink'); setTimeout(()=>el.classList.remove('blink'),170); }, 1300);
+    el._t=setTimeout(end, 2900);
+  },
+  bats(done){
+    const W=VW(), n=3;
+    for(let i=0;i<n;i++) setTimeout(()=>{
+      const el=fxEl('fxbat', BAT_SVG), y=70+Math.random()*VH()*.35, ltr=Math.random()<.5, ph=Math.random()*6;
+      fxRun(el, 5200+Math.random()*1500, t=>[ltr?-60+(W+80)*t:W+20-(W+80)*t, y+Math.sin(t*9+ph)*22, Math.sin(t*14)*8, 1], null, i===n-1?done:null);
+    }, i*500);
+  },
+  pun(done){
+    const host=$('#hello'); if(!host){ done(); return; }
+    const old=$('#punb'); if(old) old.remove();
+    const [en,pt,why]=pick(PUNS);
+    const b=document.createElement('button'); b.id='punb'; b.className='punb'; b.type='button';
+    b.innerHTML=`<span class="pen">${en}</span><span class="phint">toque para entender</span>`;
+    host.appendChild(b);
+    const close=()=>{ b.classList.add('out'); setTimeout(()=>b.remove(), 350); };
+    let t=setTimeout(close, 7000), open=false;
+    b.onclick=e=>{
+      e.stopPropagation();
+      if(open){ clearTimeout(t); close(); return; }
+      open=true; clearTimeout(t); unlockAudio(); speak(en); sfx('pop');
+      b.innerHTML=`<span class="pen">${en}</span><span class="ppt">${pt}</span><span class="pwhy">${why}</span>`;
+      t=setTimeout(close, 12000);
+    };
+    setTimeout(done, 400);
+  }
+};
+function funPool(){
+  const p=['mouse','yarn','butterfly','paws','peek','pun','pun'];
+  if(season()==='halloween') p.push('bats','bats');
+  return p;
+}
+function funNext(delay){
+  clearTimeout(FUN.timer);
+  FUN.timer=setTimeout(()=>{
+    if(FUN.busy || !homeOn()) return funNext(5000);
+    const pool=funPool().filter(n=>n!==FUN.last && (n==='pun' || !reduceMotion()));
+    const name=pick(pool); FUN.last=name; FUN.busy=true;
+    let fin=false; const done=()=>{ if(fin) return; fin=true; FUN.busy=false; };
+    try{ FX[name](done); }catch(e){ done(); }
+    setTimeout(done, 15000);
+    funNext(20000+Math.random()*20000);
+  }, delay);
+}
+// enfeites de data e soninho da noite na gatinha da saudação
+function decorateKitty(){
+  const k=$('#hkit .kitty'); if(!k) return;
+  const hi=k.querySelector('.k-headi'), s=season(), hat={halloween:'witch', xmas:'santa', bday:'party'}[s];
+  if(hi && hat && !hi.querySelector('.k-hat')) hi.insertAdjacentHTML('beforeend', HATS[hat]);
+  const slot=$('#hkit');
+  if(isNight() && Date.now()>FUN.wakeUntil){
+    k.classList.add('sleepy');
+    if(slot && !slot.querySelector('.zzz')) slot.insertAdjacentHTML('beforeend','<span class="zzz" aria-hidden="true"><i>z</i><i>z</i><i>Z</i></span>');
+  } else {
+    k.classList.remove('sleepy'); const z=slot&&slot.querySelector('.zzz'); if(z) z.remove();
+    if(!FUN.mornDone && !reduceMotion()){ const h=new Date().getHours(); if(h>=6 && h<10){ FUN.mornDone=true; setTimeout(()=>{ const kk=$('#hkit .kitty'); if(kk && homeOn()){ kk.classList.add('yawn'); maniaFx('yawn'); setTimeout(()=>kk.classList.remove('yawn'),2700); } }, 2600); } }
+  }
+}
+function wakeKitty(){
+  const k=$('#hkit .kitty'); if(!k || !k.classList.contains('sleepy')) return false;
+  FUN.wakeUntil=Date.now()+25000; decorateKitty();
+  k.classList.add('hop'); setTimeout(()=>k.classList.remove('hop'),1000);
+  setTimeout(()=>{ if(!$('#home').hidden) decorateKitty(); }, 25200);
+  return true;
+}
+// efeitinhos das manias (texto que sai da cabeça)
+function maniaFx(name){
+  const k=$('#hkit .kitty'); if(!k) return;
+  const r=k.getBoundingClientRect(), x=(r.left+r.width*.62)/zf(), y=(r.top+r.height*.08)/zf();
+  if(name==='yawn') setTimeout(()=>fxFloat(x, y, 'Aaahh~', 'soft'), 500);
+  if(name==='sneeze') setTimeout(()=>{ fxFloat(x, y, 'Atchim!', 'pop'); sfx('pop'); }, 560);
+  if(name==='lick') setTimeout(()=>fxFloat(x, y+6, '♡', 'soft'), 900);
+  if(name==='nap'){ [0,800,1600].forEach((d,i)=>setTimeout(()=>fxFloat(x+i*6, y-i*4, 'z', 'soft'), d)); setTimeout(()=>fxFloat(x, y, '!', 'pop'), 3500); }
+}
+function flipKitty(){
+  const k=$('#hkit .kitty'); if(!k || reduceMotion()) return;
+  setTimeout(()=>{ k.classList.remove('poke'); k.classList.add('flip','smile'); setTimeout(()=>k.classList.remove('flip','smile'), 1200); }, 120);
+  sfx('record');
+}
+// festa de aniversário (uma vez por ano)
+function birthdayParty(){
+  if(season()!=='bday' || !homeOn()) return;
+  const y=String(new Date().getFullYear()); if(lsGet('gatinha-bday','')===y) return;
+  lsSet('gatinha-bday', y);
+  ST.coins+=50; ST.coinsTotal=(ST.coinsTotal||0)+50; saveST(); const t=$('#coinTop'); if(t) t.textContent=ST.coins;
+  const ks=Math.min(.36, Math.min(innerHeight*.3,200)/540).toFixed(3), nm=NAME||'Anandrya';
+  overlay(`<canvas class="confetti"></canvas><div class="hero" id="bdHero">${kittyHTML('idle wave smile', ks)}</div><h2>Happy birthday, ${esc(nm)}!</h2><p class="en">Feliz aniversário, ${esc(nm)}!</p><p>Hoje é o seu dia! A gatinha preparou um presente:</p><span class="coinline">${COIN}+50 moedinhas</span><div class="btns"><button class="btn" id="bdOk">Thank you!</button></div>`);
+  const hi=document.querySelector('#bdHero .k-headi'); if(hi) hi.insertAdjacentHTML('beforeend', HATS.party);
+  confetti($('#rOver .confetti')); sfx('record'); unlockAudio(); setTimeout(()=>speak(`Happy birthday, ${nm}!`), 500);
+  $('#bdOk').onclick=()=>{ $('#rOver').hidden=true; };
+}
+
 if(typeof ST.coinsTotal!=='number') ST.coinsTotal=ST.coins||0;
 initTiers();
 applyPal(); applyFS(); applyA11y(); drawBg();
@@ -5064,7 +5378,9 @@ welcome();
 if(/[?&]go=pet/.test(location.search)) setTimeout(()=>{ $('#rOver').hidden=true; openPet(); }, 300);
 setTimeout(audioCheck, 1500);
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+setTimeout(birthdayParty, 3600);
 setTimeout(bkNag, 4200);
+funNext(9000);
 </script>
 
 </body>
