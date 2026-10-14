@@ -1,5 +1,5 @@
 // Guarda o app no celular para funcionar sem internet + lembrete diário da gatinha
-const CACHE = 'gatinha-v56';
+const CACHE = 'gatinha-v61';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png'];
 const STATE = 'gatinha-state', STATE_URL = './__estado__';
 self.addEventListener('install', e => {
