@@ -1,9 +1,16 @@
 // Guarda o app no celular para funcionar sem internet + lembrete diário da gatinha
-const CACHE = 'gatinha-v61';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png'];
+const CACHE = 'gatinha-v63';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png',
+               './gatinha.js', './gatinha_doutora.png', './gatinha_doutora.glb'];
+// three.js (CDN) para a gatinha 3D funcionar sem internet; se a CDN falhar, o app instala mesmo assim
+const CDN = ['https://unpkg.com/three@0.170.0/build/three.module.js',
+             'https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js',
+             'https://unpkg.com/three@0.170.0/examples/jsm/utils/BufferGeometryUtils.js',
+             'https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js',
+             'https://unpkg.com/three@0.170.0/examples/jsm/environments/RoomEnvironment.js'];
 const STATE = 'gatinha-state', STATE_URL = './__estado__';
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES).then(() => Promise.allSettled(CDN.map(u => c.add(u))))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== STATE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
@@ -30,7 +37,7 @@ const MSGS = [
   ['Desafio do dia 🏆', 'Será que você bate seu recorde hoje? Bora tentar!'],
   ['Practice makes perfect! 🌟', 'Um pouquinho por dia faz milagre. Vamos estudar?'],
   ['Hello, {N}! 👋', 'Sua dose diária de inglês está te esperando.'],
-  ['Pronta pra batalha? ⚔️', 'A cavaleira gatinha separou palavras novas pra você!'],
+  ['Hora da consulta! 🩺', 'A doutora gatinha separou palavras novas pra você!'],
   ['Hora de brilhar! ✨', 'Abre o app e mostra pra gatinha o que você já sabe.'],
   ['Did you know? 🤓', 'Quem treina todo dia aprende muito mais rápido. Vamos?'],
   ['A gatinha te chamou! 🐾', 'Ela está com saudade e quer uma partidinha.'],
