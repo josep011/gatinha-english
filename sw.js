@@ -1,5 +1,5 @@
 // Guarda o app no celular para funcionar sem internet + lembrete diário da gatinha
-const CACHE = 'gatinha-v63';
+const CACHE = 'gatinha-v64';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png',
                './gatinha.js', './gatinha_doutora.png', './gatinha_doutora.glb'];
 // three.js (CDN) para a gatinha 3D funcionar sem internet; se a CDN falhar, o app instala mesmo assim
@@ -43,8 +43,8 @@ const MSGS = [
   ['A gatinha te chamou! 🐾', 'Ela está com saudade e quer uma partidinha.'],
   ['Good day, {N}! ☀️', 'Que tal uma conversa em inglês com a gatinha hoje?'],
 ];
-const STREAK = ['Não perde sua sequência! 🔥', 'Você está com {S} dias seguidos. Bora manter hoje também, {N}?'];
 const HUNGRY = ['A gatinha está com fome! 🍣', 'Passa na Casinha pra dar comidinha e depois treina um pouquinho?'];
+const STREAK = ['Não perde sua sequência! 🔥', 'Você está com {S} dias seguidos. Bora manter hoje também, {N}?'];
 const dayStr = d => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 async function readState(){ try{ const c=await caches.open(STATE); const r=await c.match(STATE_URL); return r ? await r.json() : {}; }catch(e){ return {}; } }
 async function writeState(s){ try{ const c=await caches.open(STATE); await c.put(STATE_URL, new Response(JSON.stringify(s), {headers:{'Content-Type':'application/json'}})); }catch(e){} }
