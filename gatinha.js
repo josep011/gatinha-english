@@ -4,12 +4,20 @@
 //   const gata = await montarGatinha(document.getElementById('gata'), { url: '/gatinha_doutora.glb' });
 //   gata.humor('feliz');   // tchau normal feliz falando triste chorando brava irritada surpresa
 //                          // apaixonada tonta sono dormindo marota envergonhada
+//   gata.acao('andar'); gata.parar();   // anda no lugar até parar (a caixa na tela é quem se move)
+//   gata.acao('beijo');                 // inclina, segura as patinhas e levanta o pezinho
+//   gata.virar(-Math.PI / 2);           // vira o corpo (radianos; 0 = de frente)
+//   gata.ponto('boca_sorriso'); gata.cabecaTela();   // posições na tela, em fração da caixa
+//
+// O mesmo componente monta o gatinho de terno: montarGatinha(el, { url: 'gatinho_terno.glb' }).
+// Ele tem a boca extra 'beijo': gata.expressao('felizes', 'beijo', ['bochechas']).
 //
 // Requer o pacote "three" (npm i three) ou o importmap mostrado em exemplo-threejs.html.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { esqueleto, criarCoreografia, matrizRaiz, ponto } from './beijo.js';
 
 const CACHE = new Map();   // o .glb é baixado e lido uma vez só, mesmo com várias gatinhas na tela
 
@@ -203,21 +211,41 @@ export async function montarGatinha(elemento, opcoes = {}) {
         bE: [-0.75 * e, 0, 0.42 * e], bD: [-0.75 * e, 0, -0.42 * e], aE: [-0.95 * e, 0, 0.2 * e], aD: [-0.95 * e, 0, -0.2 * e] }; } },
     acenar: { dur: 2.3, f: (p, t) => { const e = env(p, 0.15);
       return { cab: [0, 0.1 * e, 0.12 * e], bD: [-0.2 * e, 0, 2.45 * e], aD: [0, 0, 0.45 * Math.sin(t * 11) * e], bE: [0, 0, -0.1 * e], tr: [0, 0, 0.03 * Math.sin(t * 5.5) * e] }; } },
+    // andar: passo contínuo (dura até chamar parar()); a gatinha anda "no lugar", quem a leva é a caixa na tela
+    andar: { dur: 600, f: (p, t) => { const e = sm(t / 0.3), st = t * Math.PI * 2 * 1.75, s = Math.sin(st), c = Math.cos(st);
+      return { y: 0.0011 * Math.abs(c) * e, tr: [0.04 * e, 0.06 * s * e, 0.025 * s * e], cab: [-0.03 * e, -0.05 * s * e, -0.03 * s * e],
+        pE: [-0.58 * s * e, 0, 0], pD: [0.58 * s * e, 0, 0], cE: [0.9 * Math.max(0, c) * e + 0.1 * e, 0, 0], cD: [0.9 * Math.max(0, -c) * e + 0.1 * e, 0, 0],
+        bE: [0.6 * s * e, 0, -0.12 * e], bD: [-0.6 * s * e, 0, 0.12 * e], aE: [-0.35 * e, 0, 0], aD: [-0.35 * e, 0, 0] }; } },
+    // beijo: inclina para a frente, segura com as patinhas e levanta um pezinho para trás
+    beijo: { dur: 2.2, f: (p, t) => { const e = env(p, 0.18), w = Math.sin(t * 5);
+      return { y: 0.0009 * e, tr: [0.1 * e, 0, 0], cab: [0.12 * e, 0, (0.14 + 0.03 * w) * e],
+        bE: [-1.05 * e, 0, 0.3 * e], bD: [-1.05 * e, 0, -0.3 * e], aE: [-0.75 * e, 0, 0.35 * e], aD: [-0.75 * e, 0, -0.35 * e],
+        pD: [0.22 * e, 0, 0], cD: [(1.25 + 0.12 * w) * e, 0, 0], pE: [-0.05 * e, 0, 0], oE: [0, 0, 0.12 * e], oD: [0, 0, -0.12 * e] }; } },
   };
   let A = null;
   const base = { y: gata.position.y, ry: gata.rotation.y };
-  function acao(nome) {
+  function acao(nome, dur) {
     const a = ACOES[nome]; if (!a) return 0;
     if (humorAtual === 'tchau') humor('normal');
-    A = { nome, t0: relogio.elapsedTime, dur: a.dur, f: a.f };
-    return a.dur;
+    A = { nome, t0: relogio.elapsedTime, dur: dur || a.dur, f: a.f };
+    return A.dur;
   }
+  // termina a ação atual devagarinho (ex.: parar de andar)
+  function parar(suave = 0.3) {
+    if (!A) return;
+    if (!suave) { A.dur = 1e-6; return; }
+    if (A.fim == null) A.fim = relogio.elapsedTime, A.suave = suave;
+  }
+  const escala = (r, k) => { const o = {}; for (const [n, v] of Object.entries(r)) o[n] = typeof v === 'number' ? v * k : v.map((x) => x * k); return o; };
   function aplicarAcao(t) {
     if (!A) return;
-    const p = (t - A.t0) / A.dur;
+    let p = (t - A.t0) / A.dur;
+    let k = 1;
+    if (A.fim != null) { k = 1 - sm((t - A.fim) / A.suave); if (k <= 0) p = 1; }
     for (const m of MEMBROS) poe(J[m], [0, 0, 0]);
     if (p >= 1) { A = null; gata.position.y = base.y; gata.rotation.y = base.ry; return; }
-    const r = A.f(p, t - A.t0);
+    let r = A.f(p, t - A.t0);
+    if (k < 1) r = escala(r, k);
     for (const m of MEMBROS) if (r[m]) poe(J[m], r[m]);
     for (const m of ['tr', 'cab', 'oE', 'oD']) if (r[m]) poe(J[m], r[m], true);
     gata.position.y = base.y + (r.y || 0); gata.rotation.y = base.ry + (r.ry || 0);
@@ -269,8 +297,27 @@ export async function montarGatinha(elemento, opcoes = {}) {
     pausar() { renderer.setAnimationLoop(null); },                          // para de desenhar (gatinha guardada)
     retomar() { relogio.getDelta(); renderer.setAnimationLoop(quadro); },   // volta a desenhar
     humor,       // 'tchau' ou um dos HUMORES acima
-    acao,        // animação de corpo: pular, comemorar, dancar, palmas... (ver ACOES)
+    acao,        // animação de corpo: pular, comemorar, dancar, palmas... (ver ACOES); acao('andar') segue até parar()
+    parar,       // encerra a ação atual com suavidade
     acoes: Object.keys(ACOES),
+    virar(ang) { base.ry = ang; gata.rotation.y = ang; },   // gira o corpo todo (radianos; 0 = de frente)
+    ponto(nome) {   // onde um nó aparece na tela, em fração da caixa (0..1): ex. ponto('boca_sorriso')
+      const o = gata.getObjectByName(nome); if (!o) return null;
+      gata.updateMatrixWorld(true); camera.updateMatrixWorld();
+      const v = o.getWorldPosition(new THREE.Vector3()).project(camera);
+      return { x: (v.x + 1) / 2, y: (1 - v.y) / 2 };
+    },
+    cabecaTela() {  // círculo da cabeça na tela, em fração da caixa: { x, y, rx, ry }
+      let m = null; gata.traverse((o) => { if (!m && o.isMesh && /^cabe(ç|c)a$/.test(o.name)) m = o; });
+      if (!m) return null;
+      gata.updateMatrixWorld(true); camera.updateMatrixWorld();
+      if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+      const bs = m.geometry.boundingSphere, c = bs.center.clone().applyMatrix4(m.matrixWorld);
+      const r = bs.radius * m.matrixWorld.getMaxScaleOnAxis() * 0.97;
+      const dir = (i) => new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, i).multiplyScalar(r);
+      const p0 = c.clone().project(camera), px = c.clone().add(dir(0)).project(camera), py = c.clone().add(dir(1)).project(camera);
+      return { x: (p0.x + 1) / 2, y: (1 - p0.y) / 2, rx: (px.x - p0.x) / 2, ry: (p0.y - py.y) / -2 };
+    },
     posar(nome, p) {             // mostra um quadro da ação (p de 0 a 1), útil para testes e prévias
       const a = ACOES[nome]; if (!a) return; for (const m of ['tr', 'cab', 'oE', 'oD']) poe(J[m], [0, 0, 0]); A = { nome, t0: 0, dur: a.dur, f: a.f }; aplicarAcao(Math.min(0.999, p) * a.dur); A = null; renderer.render(cena, camera);
     },
@@ -281,5 +328,100 @@ export async function montarGatinha(elemento, opcoes = {}) {
       renderer.setAnimationLoop(null); obs.disconnect(); controles?.dispose(); mixer.stopAllAction();
       ambiente.dispose(); pmrem.dispose(); renderer.dispose(); renderer.domElement.remove();
     },
+  };
+}
+
+// ======================================================================
+// Beijo de cinema: os dois gatinhos numa cena só (um canvas por cima da tela).
+//   const cena = await montarBeijo(document.getElementById('camada'));
+//   await cena.tocar({ camRef, onde, aoComecar, aoEvento });
+// camRef: a câmera da gatinha na caixa dela (a cena usa a mesma, ampliada para a camada inteira).
+// onde(): { bw, bh, ox, oy } tamanho da caixa dela e onde ela está dentro da camada (px CSS).
+// ======================================================================
+function boneco(gltf) {
+  const raiz = new THREE.Group(); raiz.matrixAutoUpdate = false;
+  const m = gltf.scene.clone(true); raiz.add(m);
+  const rest = new Map(); m.traverse((o) => rest.set(o, o.quaternion.clone()));
+  const juntas = {}; m.traverse((o) => { if (!o.isMesh && o.name && !(o.name in juntas)) juntas[o.name] = o; });
+  const rosto = {}; m.traverse((o) => { if (/^(olhos|boca|extra)_/.test(o.name) && !o.isMesh) rosto[o.name] = o; });
+  const q = new THREE.Quaternion(), eu = new THREE.Euler();
+  let usadas = [];
+  function aplicar(st) {
+    raiz.matrix.fromArray(matrizRaiz(st)); raiz.matrixWorldNeedsUpdate = true;
+    for (const n of usadas) if (!(n in st.j) && juntas[n]) juntas[n].quaternion.copy(rest.get(juntas[n]));
+    for (const [n, e] of Object.entries(st.j)) { const o = juntas[n]; if (o) o.quaternion.copy(rest.get(o)).multiply(q.setFromEuler(eu.set(e[0], e[1], e[2]))); }
+    usadas = Object.keys(st.j);
+    const vis = new Set(['olhos_' + st.olhos, 'boca_' + st.boca, ...(st.extras || []).map((x) => 'extra_' + x)]);
+    for (const [n, o] of Object.entries(rosto)) o.scale.setScalar(vis.has(n) ? 1 : 0);
+  }
+  return { raiz, aplicar };
+}
+
+export async function montarBeijo(elemento, opcoes = {}) {
+  const { urlEla = 'gatinha_doutora.glb', urlEle = 'gatinho_terno.glb', pixelRatioMax = 2 } = opcoes;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioMax));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = 'NeutralToneMapping' in THREE ? THREE.NeutralToneMapping : THREE.ACESFilmicToneMapping;
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%';
+  elemento.appendChild(renderer.domElement);
+  const cena = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const ambiente = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; cena.environment = ambiente;
+  const sol = new THREE.DirectionalLight(0xffffff, 0.8); sol.position.set(-0.6, 1.0, 1.2); cena.add(sol);
+  for (const u of [urlEla, urlEle]) if (!CACHE.has(u)) CACHE.set(u, new GLTFLoader().loadAsync(u));
+  const [gA, gO] = await Promise.all([CACHE.get(urlEla), CACHE.get(urlEle)]);
+  const ela = boneco(gA), ele = boneco(gO); cena.add(ela.raiz, ele.raiz);
+  const skA = esqueleto(gA.parser.json), skO = esqueleto(gO.parser.json);
+  const camera = new THREE.PerspectiveCamera(28, 1, 0.001, 10);
+  const v = new THREE.Vector3();
+  let W = 1, H = 1;
+  function ajustar(o) {
+    W = elemento.clientWidth || 300; H = elemento.clientHeight || 300;
+    renderer.setSize(W, H, false);
+    camera.aspect = o.bw / o.bh;
+    camera.setViewOffset(o.bw, o.bh, -o.ox, -o.oy, W, H);   // a câmera da caixa dela, esticada para a camada toda
+    camera.updateProjectionMatrix();
+  }
+  const naTela = (p) => { v.set(p[0], p[1], p[2]).project(camera); return { x: (v.x + 1) / 2 * W, y: (1 - v.y) / 2 * H }; };
+  let parar = null;
+  function tocar({ camRef, onde, aoComecar, aoEvento }) {
+    return new Promise((resolve) => {
+      camera.position.copy(camRef.position); camera.quaternion.copy(camRef.quaternion);
+      camera.fov = camRef.fov; camera.zoom = camRef.zoom; camera.near = camRef.near; camera.far = camRef.far;
+      camera.updateMatrixWorld();
+      ajustar(onde());
+      // onde ele entra (à direita, fora da tela) e onde sai (à esquerda, fora da tela)
+      const p0 = naTela([0, 0, 0]), p1 = naTela([0.1, 0, 0]), pxPorUn = Math.max(1, (p1.x - p0.x) / 0.1);
+      const xEntra = (W - p0.x) / pxPorUn + 0.05, xSai = -p0.x / pxPorUn - 0.06;
+      const coreo = criarCoreografia(skA, skO, { xEntra, xSai });
+      const pend = coreo.eventos.slice();
+      let t0 = null, comecou = false, fim = false;
+      const acabar = () => { if (fim) return; fim = true; renderer.setAnimationLoop(null); parar = null; resolve(); };
+      parar = acabar;
+      renderer.setAnimationLoop((agora) => {
+        if (t0 === null) t0 = agora;
+        const t = (agora - t0) / 1000;
+        const o = onde(); if (!o) return acabar();
+        ajustar(o);
+        const st = coreo.estado(Math.min(t, coreo.duracao));
+        ela.aplicar(st.ela); ele.aplicar(st.ele);
+        renderer.render(cena, camera);
+        if (!comecou) { comecou = true; aoComecar && aoComecar(); }
+        while (pend.length && t >= pend[0].t) {
+          const e = pend.shift();
+          const cab = e.nome === 'coracao_ela' ? ponto(skA, st.ela, 'cabeca') : e.nome === 'coracao_ele' ? ponto(skO, st.ele, 'cabeca') : null;
+          const alvo = cab ? [cab[0], cab[1] + 0.036, cab[2]] : st.beijoPt();   // corações saem de cima da cabeça
+          const pt = naTela(alvo);
+          try { aoEvento && aoEvento(e.nome, pt.x, pt.y); } catch (err) {}
+        }
+        if (t >= coreo.duracao) acabar();
+      });
+    });
+  }
+  return {
+    tocar,
+    parar() { parar && parar(); },
+    destruir() { parar && parar(); ambiente.dispose(); pmrem.dispose(); renderer.dispose(); renderer.domElement.remove(); },
   };
 }

@@ -888,6 +888,11 @@ h1,h2,h3{text-wrap:balance}
 /* ---------- surpresinhas do menu ---------- */
 #funfx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
 .fx{position:absolute;left:0;top:0;pointer-events:none;will-change:transform}
+#beijofx{position:fixed;left:0;right:0;top:0;height:0;pointer-events:none;z-index:4;visibility:hidden}
+#beijofx.on{visibility:visible}
+.fxheart{width:18px;height:18px;animation:fxheart 1.5s ease-out forwards}
+.fxheart svg{width:100%;height:100%;display:block}
+@keyframes fxheart{0%{opacity:0;transform:translate(0,4px) scale(.4)}18%{opacity:1;transform:translate(0,-6px) scale(1.15)}100%{opacity:0;transform:translate(var(--dx,0px),-46px) scale(.9) rotate(var(--rot,0deg))}}
 .fx.tap{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .fxmouse{width:72px;padding:8px;margin:-8px}
 .fxmouse svg{width:100%;height:auto;display:block}
@@ -951,8 +956,9 @@ h1,h2,h3{text-wrap:balance}
                "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/" } }
 </script>
 <script type="module">
-import { montarGatinha } from './gatinha.js';
+import { montarGatinha, montarBeijo } from './gatinha.js';
 window.montarGatinha = montarGatinha;
+window.montarBeijo = montarBeijo;
 window.dispatchEvent(new Event('gatinha3d'));
 </script>
 </head>
@@ -1327,7 +1333,7 @@ const ACTION_MAP={ hop:'pular', jump:'pular', raise:'comemorar', plant:'comemora
   think:'pensar', look:'olhar', sneeze:'espirro', startle:'susto', shy:'timida', shake:'sacudir', love:'balancar',
   petting:'balancar', wavel:'acenar' };
 function kitAct(k, nome){
-  if(reduceMotion()) return;
+  if(reduceMotion() || k._bf) return;               // durante a visita do gatinho ela não faz outras manias
   if(k._gata){ try{ k._gata.acao(nome); }catch(e){} } else k._pend={nome, at:Date.now()};
 }
 function kitHumor(k){
@@ -1413,6 +1419,7 @@ function kitApply(k){
   // classes de animação que acabaram de entrar → toca a animação uma vez
   const now=new Set([...k.classList].filter(c=>ACTION_MAP[c])), was=k._acts||new Set();
   const nova=[...now].find(c=>!was.has(c)); k._acts=now;
+  if(k._bf) return;
   const h=kitHumor(k);
   if(k._gata && h!==k._cur){ k._cur=h; try{ k._gata.humor(h); }catch(e){} }
   if(nova) kitAct(k, ACTION_MAP[nova]);
@@ -2322,7 +2329,8 @@ const SFX = {
   win:c=>{ [523,659,784,1047].forEach((f,i)=>tone(c,f,i*.09,.28,'triangle',.11)); },
   record:c=>{ [523,659,784,1047,1319].forEach((f,i)=>tone(c,f,i*.08,.3,'triangle',.11)); meow(c,.55); },
   medal:c=>{ [1175,1568,2093].forEach((f,i)=>tone(c,f,i*.07,.35,'sine',.08)); },
-  meow:c=>meow(c)
+  meow:c=>meow(c),
+  beijo:c=>{ tone(c,1500,0,.07,'sine',.09,700); tone(c,950,.06,.14,'sine',.08,1700); }
 };
 function sfx(n){ if(!SOUND) return; const c=ac(); if(!c) return; try{ SFX[n](c) }catch(e){} }
 document.addEventListener('pointerdown', ()=>{ if(SOUND) ac(); }, {once:true});
@@ -5535,6 +5543,90 @@ const FX = {
     setTimeout(done, 400);
   }
 };
+/* ---------- o gatinho de terno e o beijo de cinema ----------
+   A cada ~1min30 (com o menu aberto) ele entra pela direita, abraça a doutora, faz um meio giro,
+   inclina ela para a esquerda num beijo apaixonado, devolve ela ao lugar e sai pela esquerda.
+   Os dois são desenhados juntos numa camada por cima da tela (montarBeijo, em gatinha.js);
+   enquanto isso a caixa normal da gatinha fica escondida, e no fim ela volta para lá. */
+const BF_HEART='<svg viewBox="0 0 32 29" aria-hidden="true"><path d="M16 28C7 21 1 15.5 1 8.6A7.6 7.6 0 0 1 16 5a7.6 7.6 0 0 1 15 3.6C31 15.5 25 21 16 28z" fill="#EC5F86"/><ellipse cx="9" cy="8" rx="2.4" ry="1.6" fill="#fff" opacity=".7"/></svg>';
+const BJ = { cena:null, criando:null, rodando:false, timer:null };
+const BJ_INTERVALO = 90000;                    // ~1min30 entre uma visita e outra
+function fxHeart(x, y, dx=0, delay=0, size=18){
+  setTimeout(()=>{ const e=fxEl('fxheart', BF_HEART); e.style.left=(x-size/2)+'px'; e.style.top=(y-size/2)+'px';
+    e.style.width=e.style.height=size+'px'; e.style.setProperty('--dx', dx+'px'); e.style.setProperty('--rot', (dx/2)+'deg');
+    setTimeout(()=>e.remove(), 1600); }, delay);
+}
+function bjCamada(){
+  let l=$('#beijofx');
+  if(!l){ l=document.createElement('div'); l.id='beijofx'; l.setAttribute('aria-hidden','true'); $('#home').appendChild(l); }
+  return l;
+}
+function bjCriar(){
+  if(BJ.cena) return Promise.resolve(BJ.cena);
+  if(BJ.criando) return BJ.criando;
+  if(!window.montarBeijo || !G3D || reduceMotion()) return Promise.resolve(null);
+  BJ.criando=window.montarBeijo(bjCamada(), { urlEla:KIT_GLB, urlEle:'gatinho_terno.glb', pixelRatioMax:1.75 })
+    .then(c=>{ BJ.cena=c; return c; }).catch(()=>null).finally(()=>{ BJ.criando=null; });
+  return BJ.criando;
+}
+// pode começar agora? devolve a caixinha da gatinha, 'espera' (tenta já já) ou null
+function bjPode(){
+  if(!homeOn() || FUN.busy || reduceMotion() || !G3D) return null;
+  const k=$('#hkit .kitty');
+  if(!k || !k._gata || !k._box || !k._gata.camera) return null;
+  if(['walk','wave'].some(c=>k.classList.contains(c))) return 'espera';      // ainda entrando na tela
+  if(k.classList.contains('sleepy')){ wakeKitty(); return 'espera'; }        // dormindo: ele chega e ela acorda
+  const r=k.getBoundingClientRect();
+  if(!r.width || r.top<0 || r.bottom>innerHeight) return null;
+  return k;
+}
+function bjEfeito(nome, x, y){
+  if(nome==='coracao_ela' || nome==='coracao_ele') fxHeart(x, y, nome==='coracao_ela'?-6:6, 0, 17);
+  if(nome==='beijo'){
+    sfx('beijo'); fxFloat(x-22, y-46, 'Mwah!', 'pop');
+    [-16,10,-4,18,-24,6].forEach((dx,i)=>fxHeart(x+dx*.5, y-14, dx, 80+i*150, 13+(i%3)*5));
+  }
+  if(nome==='coracoes') [-10,12,-22,4].forEach((dx,i)=>fxHeart(x+dx*.4, y-18, dx, i*190, 15+(i%2)*6));
+}
+async function bjTocar(){
+  let k=bjPode(); if(!k || k==='espera') return k;
+  const cena=await bjCriar(); if(!cena) return null;
+  k=bjPode(); if(!k || k==='espera') return k;
+  const her=k._gata, box=k._box, z=zf(), cam=bjCamada();
+  BJ.rodando=true; FUN.busy=true; k._bf=true;
+  const pb=$('#punb'); if(pb) pb.remove();             // tira o balãozinho de piada, se tiver
+  const kr=k.getBoundingClientRect(), h=kr.height/z;
+  cam.style.top=Math.max(0, kr.top/z - h*.55)+'px'; cam.style.height=(h*1.9)+'px';
+  cam.classList.add('on');
+  try{ her.humor('normal'); her.virar(0); }catch(e){}
+  await new Promise(r=>requestAnimationFrame(()=>r()));
+  const onde=()=>{
+    if(k._gata!==her || !homeOn()) return null;
+    const r=k.getBoundingClientRect(), c=cam.getBoundingClientRect();
+    if(!r.width || r.bottom<0 || r.top>innerHeight) return null;
+    return { bw:r.width/z, bh:r.height/z, ox:(r.left-c.left)/z, oy:(r.top-c.top)/z };
+  };
+  try{
+    await cena.tocar({ camRef:her.camera, onde,
+      aoComecar:()=>{ box.style.visibility='hidden'; try{ her.pausar(); }catch(e){} },
+      aoEvento:(nome,x,y)=>{ const c=cam.getBoundingClientRect(); bjEfeito(nome, c.left/z+x, c.top/z+y); } });
+  }catch(e){}
+  // a gatinha volta para a caixa dela, ainda corada
+  try{ her.retomar(); her.virar(0); her.expressao('felizes','sorriso',['bochechas']); }catch(e){}
+  box.style.visibility='';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>cam.classList.remove('on')));
+  k._bf=false; BJ.rodando=false; FUN.busy=false;
+  setTimeout(()=>{ if(k._gata===her && !k._bf){ try{ her.humor(k._cur||'normal'); }catch(e){} } }, 3500);
+  return k;
+}
+function bjAgendar(ms){ clearTimeout(BJ.timer); BJ.timer=setTimeout(bjCiclo, ms); }
+async function bjCiclo(){
+  if(BJ.rodando) return bjAgendar(5000);
+  let r=null; try{ r=await bjTocar(); }catch(e){ BJ.rodando=false; FUN.busy=false; }
+  if(r==='espera') bjAgendar(2600);                                    // acordando / entrando: tenta logo
+  else if(r) bjAgendar(BJ_INTERVALO + (Math.random()-.5)*10000);        // deu certo: próxima em ~1min30
+  else bjAgendar(6000);                                                 // não deu agora (outra tela, outra surpresa)
+}
 function funPool(){
   const p=['mouse','yarn','butterfly','paws','peek','pun','pun'];
   if(season()==='halloween') p.push('bats','bats');
@@ -5651,6 +5743,9 @@ setTimeout(birthdayParty, 3600);
 setTimeout(christmasGift, 3700);
 setTimeout(bkNag, 4200);
 funNext(9000);
+// o gatinho de terno: carrega com calma e faz a primeira visita logo; depois, a cada ~1min30
+setTimeout(function bjPre(){ if(G3D && window.montarBeijo) bjCriar(); else setTimeout(bjPre, 2000); }, 3000);
+bjAgendar(/[?&]beijo\b/.test(location.search) ? 4500 : 9000);
 </script>
 
 </body>

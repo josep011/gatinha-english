@@ -1,7 +1,7 @@
 // Guarda o app no celular para funcionar sem internet + lembrete diário da gatinha
-const CACHE = 'gatinha-v64';
+const CACHE = 'gatinha-v66';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './badge-96.png',
-               './gatinha.js', './gatinha_doutora.png', './gatinha_doutora.glb'];
+               './gatinha.js', './beijo.js', './gatinha_doutora.png', './gatinha_doutora.glb'];
 // three.js (CDN) para a gatinha 3D funcionar sem internet; se a CDN falhar, o app instala mesmo assim
 const CDN = ['https://unpkg.com/three@0.170.0/build/three.module.js',
              'https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js',
